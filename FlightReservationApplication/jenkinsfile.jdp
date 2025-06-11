@@ -3,20 +3,39 @@ pipeline {
     stages {
         stage('PULL') {
             steps{
-                echo 'PULL'
+                git branch: 'main', url: 'https://github.com/Aniketrmore/Flight-reservation.git'
             }
         }
          stage('BUILD') {
             steps{
-                echo 'PULL'
+                sh 'mvn clean package'
             }
         }
          stage('TEST') {
             steps{
-                echo 'PULL'
+                withSonarQubeEnv(installationName: 'sonarqube', credentialsId: 'sonar-cred') {
+                    sh '''mvn sonar:sonar -Dsonar.projectKey=flight-reservation-backend 
+                    '''
+                }
             }
         }
-         stage('DEPLOY') {
+        stage('QA-GATE') {
+            steps{
+                timeout(10) {
+                    waitForQualityGate abortPipeline: true
+                }
+                
+            }
+        }
+         stage('DOCKER-BUILD') {
+            steps{
+                sh'''
+                    docker build . -t aniketrmore/flight-reservation-app:latest
+                    docker push aniketrmore/flight-reservation-app:latest
+                '''
+            }
+        }
+        stage('DEPLOY') {
             steps{
                 echo 'PULL'
             }
