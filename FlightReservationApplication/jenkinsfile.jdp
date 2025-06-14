@@ -38,6 +38,7 @@ pipeline {
                     cd FlightReservationApplication
                     docker build . -t aniketrmore/flight-reservation-app:latest
                     docker push aniketrmore/flight-reservation-app:latest
+                    docker rmi `docker image list -aq`
                 '''
             }
         }
@@ -48,6 +49,17 @@ pipeline {
                 kubectl apply -f k8s/
                 '''
             }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        always {
+            cleanWs ()
         }
     }
 }
